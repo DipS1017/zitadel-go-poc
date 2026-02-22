@@ -237,27 +237,9 @@ func extractRoleNames(roles zitadelRoles) []string {
 	return names
 }
 
-func hasScope(scopes []string, required string) bool {
-	for _, s := range scopes {
-		if s == required {
-			return true
-		}
-	}
-	return false
-}
-
 func hasRole(roles []string, required string) bool {
 	for _, r := range roles {
 		if r == required {
-			return true
-		}
-	}
-	return false
-}
-
-func hasAnyRole(roles []string, anyOf ...string) bool {
-	for _, candidate := range anyOf {
-		if hasRole(roles, candidate) {
 			return true
 		}
 	}

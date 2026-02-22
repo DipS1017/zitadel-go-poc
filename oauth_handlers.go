@@ -17,6 +17,26 @@ import (
 // Helpers
 // =============================================================================
 
+// jwtSub extracts the sub claim from a JWT without full verification.
+// Used only to seed the mock permission store after a successful token exchange.
+func jwtSub(token string) string {
+	parts := strings.Split(token, ".")
+	if len(parts) != 3 {
+		return ""
+	}
+	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return ""
+	}
+	var claims struct {
+		Sub string `json:"sub"`
+	}
+	if err := json.Unmarshal(payload, &claims); err != nil {
+		return ""
+	}
+	return claims.Sub
+}
+
 func generateState() (string, error) {
 	b := make([]byte, 32)
 	if _, err := rand.Read(b); err != nil {
@@ -130,6 +150,11 @@ func handleAuthToken(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, fmt.Sprintf("token exchange failed: %v", err))
 		return
+	}
+
+	// Seed mock permissions for this user so the mock data is accessible.
+	if sub := jwtSub(tokens.AccessToken); sub != "" {
+		seedPermissions(sub)
 	}
 
 	writeJSON(w, http.StatusOK, map[string]interface{}{

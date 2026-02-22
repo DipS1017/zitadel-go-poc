@@ -89,21 +89,9 @@ func authMiddleware(client *http.Client, next http.Handler) http.Handler {
 // Authorization middleware
 // =============================================================================
 
-func requireScope(scope string, next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user, ok := getUserFromContext(r)
-		if !ok {
-			writeError(w, http.StatusUnauthorized, "unauthenticated")
-			return
-		}
-		if !hasScope(user.Scopes, scope) {
-			writeError(w, http.StatusForbidden, fmt.Sprintf("required scope: %s", scope))
-			return
-		}
-		next.ServeHTTP(w, r)
-	})
-}
-
+// requireRole gates a route by platform-level role from the JWT (e.g. "admin").
+// Resource-level roles (owner/editor/viewer) are never in the JWT —
+// those are checked inside handlers via canAccess().
 func requireRole(role string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user, ok := getUserFromContext(r)
@@ -112,28 +100,9 @@ func requireRole(role string, next http.Handler) http.Handler {
 			return
 		}
 		if !hasRole(user.Roles, role) {
-			writeError(w, http.StatusForbidden, fmt.Sprintf("required role: %s", role))
+			writeError(w, http.StatusForbidden, fmt.Sprintf("platform role %q required", role))
 			return
 		}
 		next.ServeHTTP(w, r)
-	})
-}
-
-func requireScopeOrRole(scope string, roles []string, next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user, ok := getUserFromContext(r)
-		if !ok {
-			writeError(w, http.StatusUnauthorized, "unauthenticated")
-			return
-		}
-		if hasScope(user.Scopes, scope) || hasAnyRole(user.Roles, roles...) {
-			next.ServeHTTP(w, r)
-			return
-		}
-		writeJSON(w, http.StatusForbidden, map[string]interface{}{
-			"error":          "insufficient permissions",
-			"required_scope": scope,
-			"required_roles": roles,
-		})
 	})
 }

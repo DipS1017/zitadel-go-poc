@@ -6,7 +6,7 @@ type authConfig struct {
 	zitadelDomain string
 
 	// JWKS-based local JWT validation
-	jwksURL         string
+	jwksURL          string
 	requiredAudience string
 
 	// Web application — used for the login / register flow
@@ -14,6 +14,7 @@ type authConfig struct {
 	oauthClientSecret string
 	redirectURI       string
 	frontendURL       string
+
 }
 
 // cfg is the hardcoded configuration.
@@ -29,6 +30,6 @@ var cfg = authConfig{
 	// Web app (login flow)
 	oauthClientID:     "360896690300977155",
 	oauthClientSecret: "a8eja1Bpk1MeNPUWd34VVfW8QwKTNNorgbox0cbuU2CGi7qaaANrpWbgBmVzaPgf",
-	redirectURI:       "http://localhost:5173/auth/callback",
-	frontendURL:       "http://localhost:5173",
+	redirectURI: "http://localhost:5173/auth/callback",
+	frontendURL: "http://localhost:5173",
 }
