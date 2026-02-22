@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod:*)",
+      "Bash(go vet:*)",
+      "Bash(go build:*)",
+      "WebSearch",
+      "WebFetch(domain:zitadel.com)",
+      "WebFetch(domain:help.zitadel.com)"
+    ]
+  }
+}
