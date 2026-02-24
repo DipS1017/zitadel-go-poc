@@ -3,8 +3,14 @@ package main
 import "net/http"
 
 func registerRoutes(mux *http.ServeMux, client *http.Client) {
+	// auth      — valid JWT only (public-ish, e.g. health, debug)
+	// user      — valid JWT + platform role "user" assigned in Zitadel
+	// admin     — valid JWT + platform role "admin" assigned in Zitadel
 	auth := func(h http.Handler) http.Handler {
 		return authMiddleware(client, h)
+	}
+	user := func(h http.Handler) http.Handler {
+		return authMiddleware(client, requireRole("user", h))
 	}
 	admin := func(h http.Handler) http.Handler {
 		return authMiddleware(client, requireRole("admin", h))
@@ -18,36 +24,36 @@ func registerRoutes(mux *http.ServeMux, client *http.Client) {
 	// ── Public ────────────────────────────────────────────────────────────────
 	mux.HandleFunc("GET /health", handleHealth)
 
-	// ── Authenticated — permission checks happen inside each handler ──────────
-	mux.Handle("GET /api/me", auth(http.HandlerFunc(handleMe)))
-	mux.Handle("GET /api/scope-introspect", auth(http.HandlerFunc(handleScopeIntrospect)))
+	// ── Authenticated — platform role "user" required, resource checks inside ──
+	mux.Handle("GET /api/me", user(http.HandlerFunc(handleMe)))
+	mux.Handle("GET /api/scope-introspect", user(http.HandlerFunc(handleScopeIntrospect)))
 
 	// Videos
-	mux.Handle("GET /api/videos", auth(http.HandlerFunc(handleListVideos)))
-	mux.Handle("GET /api/videos/{id}", auth(http.HandlerFunc(handleGetVideo)))
-	mux.Handle("POST /api/videos", auth(http.HandlerFunc(handleUploadVideo)))
-	mux.Handle("PUT /api/videos/{id}", auth(http.HandlerFunc(handleUpdateVideo)))
-	mux.Handle("DELETE /api/videos/{id}", auth(http.HandlerFunc(handleDeleteVideo)))
+	mux.Handle("GET /api/videos", user(http.HandlerFunc(handleListVideos)))
+	mux.Handle("GET /api/videos/{id}", user(http.HandlerFunc(handleGetVideo)))
+	mux.Handle("POST /api/videos", user(http.HandlerFunc(handleUploadVideo)))
+	mux.Handle("PUT /api/videos/{id}", user(http.HandlerFunc(handleUpdateVideo)))
+	mux.Handle("DELETE /api/videos/{id}", user(http.HandlerFunc(handleDeleteVideo)))
 
 	// Channels
-	mux.Handle("GET /api/channels", auth(http.HandlerFunc(handleListChannels)))
-	mux.Handle("GET /api/channels/{id}", auth(http.HandlerFunc(handleGetChannel)))
-	mux.Handle("POST /api/channels", auth(http.HandlerFunc(handleCreateChannel)))
-	mux.Handle("PUT /api/channels/{id}", auth(http.HandlerFunc(handleUpdateChannel)))
-	mux.Handle("DELETE /api/channels/{id}", auth(http.HandlerFunc(handleDeleteChannel)))
+	mux.Handle("GET /api/channels", user(http.HandlerFunc(handleListChannels)))
+	mux.Handle("GET /api/channels/{id}", user(http.HandlerFunc(handleGetChannel)))
+	mux.Handle("POST /api/channels", user(http.HandlerFunc(handleCreateChannel)))
+	mux.Handle("PUT /api/channels/{id}", user(http.HandlerFunc(handleUpdateChannel)))
+	mux.Handle("DELETE /api/channels/{id}", user(http.HandlerFunc(handleDeleteChannel)))
 
 	// Playlists
-	mux.Handle("GET /api/playlists", auth(http.HandlerFunc(handleListPlaylists)))
-	mux.Handle("GET /api/playlists/{id}", auth(http.HandlerFunc(handleGetPlaylist)))
-	mux.Handle("POST /api/playlists", auth(http.HandlerFunc(handleCreatePlaylist)))
-	mux.Handle("PUT /api/playlists/{id}", auth(http.HandlerFunc(handleUpdatePlaylist)))
-	mux.Handle("DELETE /api/playlists/{id}", auth(http.HandlerFunc(handleDeletePlaylist)))
+	mux.Handle("GET /api/playlists", user(http.HandlerFunc(handleListPlaylists)))
+	mux.Handle("GET /api/playlists/{id}", user(http.HandlerFunc(handleGetPlaylist)))
+	mux.Handle("POST /api/playlists", user(http.HandlerFunc(handleCreatePlaylist)))
+	mux.Handle("PUT /api/playlists/{id}", user(http.HandlerFunc(handleUpdatePlaylist)))
+	mux.Handle("DELETE /api/playlists/{id}", user(http.HandlerFunc(handleDeletePlaylist)))
 
 	// Comments
-	mux.Handle("GET /api/comments", auth(http.HandlerFunc(handleListComments)))
-	mux.Handle("GET /api/comments/{id}", auth(http.HandlerFunc(handleGetComment)))
-	mux.Handle("POST /api/comments", auth(http.HandlerFunc(handleCreateComment)))
-	mux.Handle("DELETE /api/comments/{id}", auth(http.HandlerFunc(handleDeleteComment)))
+	mux.Handle("GET /api/comments", user(http.HandlerFunc(handleListComments)))
+	mux.Handle("GET /api/comments/{id}", user(http.HandlerFunc(handleGetComment)))
+	mux.Handle("POST /api/comments", user(http.HandlerFunc(handleCreateComment)))
+	mux.Handle("DELETE /api/comments/{id}", user(http.HandlerFunc(handleDeleteComment)))
 
 	// Admin
 	mux.Handle("GET /api/admin/users", admin(http.HandlerFunc(handleAdminUsers)))

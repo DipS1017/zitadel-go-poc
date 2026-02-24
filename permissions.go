@@ -2,10 +2,14 @@ package main
 
 import "strings"
 
+// Resource-level roles (never in JWT — permStore only):
+//   viewer  — can read/watch
+//   creator — made the resource, can edit and delete it
+//   admin   — full control over any resource
 var roleRank = map[string]int{
-	"viewer": 1,
-	"editor": 2,
-	"owner":  3,
+	"viewer":  1,
+	"creator": 2,
+	"admin":   3,
 }
 
 // =============================================================================
@@ -79,10 +83,10 @@ func revokeAccess(userID, resourceType, resourceID string) {
 // In production this is replaced by loadUserPermissions after a real DB query.
 func seedPermissions(userID string) {
 	for _, id := range []string{"v1", "v2"} {
-		permStore[permKey(userID, "video", id)] = "owner"
+		permStore[permKey(userID, "video", id)] = "creator"
 	}
-	permStore[permKey(userID, "channel", "c1")] = "owner"
-	permStore[permKey(userID, "playlist", "p1")] = "owner"
-	permStore[permKey(userID, "comment", "cm1")] = "owner"
+	permStore[permKey(userID, "channel", "c1")] = "creator"
+	permStore[permKey(userID, "playlist", "p1")] = "creator"
+	permStore[permKey(userID, "comment", "cm1")] = "creator"
 	loadUserPermissions(userID)
 }

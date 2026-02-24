@@ -10,7 +10,7 @@ function decodeJWT(token: string): Record<string, unknown> | null {
 type EndpointResult = { status: number | null; body: unknown; loading: boolean }
 type Endpoint = { label: string; method: string; path: string; group: string }
 
-const ROLES = ['owner', 'editor', 'viewer'] as const
+const ROLES = ['admin', 'creator', 'viewer'] as const
 const RESOURCES = [
   { type: 'video',    id: 'v1'  },
   { type: 'video',    id: 'v2'  },
@@ -141,10 +141,10 @@ function PermissionsPanel({ token }: { token: string | null }) {
 
   async function grantAll() {
     for (const { type, id } of RESOURCES) {
-      await apiFetch('POST', '/api/debug/grant', token, { resource_type: type, resource_id: id, role: 'owner' })
+      await apiFetch('POST', '/api/debug/grant', token, { resource_type: type, resource_id: id, role: 'creator' })
     }
     await load()
-    setMsg('all resources → owner')
+    setMsg('all resources → creator')
     setTimeout(() => setMsg(''), 2000)
   }
 
@@ -156,7 +156,7 @@ function PermissionsPanel({ token }: { token: string | null }) {
         <span style={s.groupLabel}>Permissions (permStore)</span>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           {msg && <span style={{ color: '#4ade80', fontSize: 12 }}>{msg}</span>}
-          <button style={s.grantAllBtn} onClick={grantAll}>Grant all → owner</button>
+          <button style={s.grantAllBtn} onClick={grantAll}>Grant all → creator</button>
         </div>
       </div>
       <div style={s.permGrid}>
@@ -190,7 +190,7 @@ function PermissionsPanel({ token }: { token: string | null }) {
 }
 
 function roleColor(role: string) {
-  return role === 'owner' ? '#16a34a' : role === 'editor' ? '#92400e' : role === 'viewer' ? '#1e3a5f' : '#333'
+  return role === 'admin' ? '#7c3aed' : role === 'creator' ? '#16a34a' : role === 'viewer' ? '#1e3a5f' : '#333'
 }
 
 // =============================================================================

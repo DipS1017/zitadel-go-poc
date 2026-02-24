@@ -105,14 +105,14 @@ func handleUploadVideo(w http.ResponseWriter, r *http.Request) {
 	user, _ := getUserFromContext(r)
 	newID := fmt.Sprintf("v%d", len(mockVideos)+1)
 	mockVideos[newID] = map[string]interface{}{"id": newID, "title": "New Video"}
-	grantAccess(user.Sub, "video", newID, "owner")
+	grantAccess(user.Sub, "video", newID, "creator")
 	writeJSON(w, http.StatusCreated, map[string]string{"id": newID, "status": "uploaded"})
 }
 
 func handleUpdateVideo(w http.ResponseWriter, r *http.Request) {
 	user, _ := getUserFromContext(r)
 	id := r.PathValue("id")
-	if !canAccess(user.Sub, "video", id, "editor") {
+	if !canAccess(user.Sub, "video", id, "creator") {
 		writeError(w, http.StatusForbidden, "no access to update this video")
 		return
 	}
@@ -122,7 +122,7 @@ func handleUpdateVideo(w http.ResponseWriter, r *http.Request) {
 func handleDeleteVideo(w http.ResponseWriter, r *http.Request) {
 	user, _ := getUserFromContext(r)
 	id := r.PathValue("id")
-	if !canAccess(user.Sub, "video", id, "owner") {
+	if !canAccess(user.Sub, "video", id, "creator") {
 		writeError(w, http.StatusForbidden, "only the owner can delete this video")
 		return
 	}
@@ -165,14 +165,14 @@ func handleCreateChannel(w http.ResponseWriter, r *http.Request) {
 	user, _ := getUserFromContext(r)
 	newID := fmt.Sprintf("c%d", len(mockChannels)+1)
 	mockChannels[newID] = map[string]interface{}{"id": newID, "name": "New Channel"}
-	grantAccess(user.Sub, "channel", newID, "owner")
+	grantAccess(user.Sub, "channel", newID, "creator")
 	writeJSON(w, http.StatusCreated, map[string]string{"id": newID, "status": "created"})
 }
 
 func handleUpdateChannel(w http.ResponseWriter, r *http.Request) {
 	user, _ := getUserFromContext(r)
 	id := r.PathValue("id")
-	if !canAccess(user.Sub, "channel", id, "editor") {
+	if !canAccess(user.Sub, "channel", id, "creator") {
 		writeError(w, http.StatusForbidden, "no access to update this channel")
 		return
 	}
@@ -182,7 +182,7 @@ func handleUpdateChannel(w http.ResponseWriter, r *http.Request) {
 func handleDeleteChannel(w http.ResponseWriter, r *http.Request) {
 	user, _ := getUserFromContext(r)
 	id := r.PathValue("id")
-	if !canAccess(user.Sub, "channel", id, "owner") {
+	if !canAccess(user.Sub, "channel", id, "creator") {
 		writeError(w, http.StatusForbidden, "only the owner can delete this channel")
 		return
 	}
@@ -225,14 +225,14 @@ func handleCreatePlaylist(w http.ResponseWriter, r *http.Request) {
 	user, _ := getUserFromContext(r)
 	newID := fmt.Sprintf("p%d", len(mockPlaylists)+1)
 	mockPlaylists[newID] = map[string]interface{}{"id": newID, "title": "New Playlist"}
-	grantAccess(user.Sub, "playlist", newID, "owner")
+	grantAccess(user.Sub, "playlist", newID, "creator")
 	writeJSON(w, http.StatusCreated, map[string]string{"id": newID, "status": "created"})
 }
 
 func handleUpdatePlaylist(w http.ResponseWriter, r *http.Request) {
 	user, _ := getUserFromContext(r)
 	id := r.PathValue("id")
-	if !canAccess(user.Sub, "playlist", id, "editor") {
+	if !canAccess(user.Sub, "playlist", id, "creator") {
 		writeError(w, http.StatusForbidden, "no access to update this playlist")
 		return
 	}
@@ -242,7 +242,7 @@ func handleUpdatePlaylist(w http.ResponseWriter, r *http.Request) {
 func handleDeletePlaylist(w http.ResponseWriter, r *http.Request) {
 	user, _ := getUserFromContext(r)
 	id := r.PathValue("id")
-	if !canAccess(user.Sub, "playlist", id, "owner") {
+	if !canAccess(user.Sub, "playlist", id, "creator") {
 		writeError(w, http.StatusForbidden, "only the owner can delete this playlist")
 		return
 	}
@@ -285,14 +285,14 @@ func handleCreateComment(w http.ResponseWriter, r *http.Request) {
 	user, _ := getUserFromContext(r)
 	newID := fmt.Sprintf("cm%d", len(mockComments)+1)
 	mockComments[newID] = map[string]interface{}{"id": newID, "body": "New Comment"}
-	grantAccess(user.Sub, "comment", newID, "owner")
+	grantAccess(user.Sub, "comment", newID, "creator")
 	writeJSON(w, http.StatusCreated, map[string]string{"id": newID, "status": "created"})
 }
 
 func handleDeleteComment(w http.ResponseWriter, r *http.Request) {
 	user, _ := getUserFromContext(r)
 	id := r.PathValue("id")
-	if !canAccess(user.Sub, "comment", id, "editor") {
+	if !canAccess(user.Sub, "comment", id, "creator") {
 		writeError(w, http.StatusForbidden, "no access to delete this comment")
 		return
 	}
@@ -323,7 +323,7 @@ func handleDebugPerms(w http.ResponseWriter, r *http.Request) {
 type grantRequest struct {
 	ResourceType string `json:"resource_type"` // "video" | "channel" | "playlist" | "comment"
 	ResourceID   string `json:"resource_id"`
-	Role         string `json:"role"` // "owner" | "editor" | "viewer"
+	Role         string `json:"role"` // "admin" | "creator" | "viewer"
 }
 
 // POST /api/debug/grant — give the current user a role on a resource
@@ -389,7 +389,7 @@ func splitKey(key string) []string {
 
 func handleAdminUsers(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, []map[string]interface{}{
-		{"id": "u1", "username": "alice", "role": "editor"},
+		{"id": "u1", "username": "alice", "role": "creator"},
 		{"id": "u2", "username": "bob", "role": "viewer"},
 	})
 }
